@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>滑移推板桌｜机构示意</title>
+<style>
+:root{color-scheme:light;--ink:#252823;--muted:#75786f;--paper:#f7f6f1;--line:#deded6;--green:#60756a}*{box-sizing:border-box}body{margin:0;background:#eeede8;color:var(--ink);font:14px/1.5 "Segoe UI","Microsoft YaHei",sans-serif}.page{max-width:1200px;margin:28px auto;padding:0 18px}.card{overflow:hidden;background:#fbfaf7;border:1px solid #e2e0d8;border-radius:18px;box-shadow:0 18px 55px #25282312}.head{display:flex;justify-content:space-between;align-items:flex-start;padding:24px 28px 4px}.kicker{font:700 10px ui-monospace,monospace;letter-spacing:.17em;color:#8b8c83}.head h1{font-size:24px;letter-spacing:.02em;margin:7px 0 3px;font-weight:650}.sub{font-size:13px;color:var(--muted)}.fig{margin-top:4px;padding:7px 10px;border:1px solid #deddd4;border-radius:99px;color:#74756d;font:10px ui-monospace,monospace;letter-spacing:.08em}.drawing{padding:0 14px}.drawing svg{display:block;width:100%;height:auto;max-height:650px}.controls{display:grid;grid-template-columns:1fr 170px;gap:24px;align-items:center;padding:17px 28px 20px;border-top:1px solid #e7e5de;background:#f8f7f2}.ctl label{display:flex;justify-content:space-between;margin-bottom:8px;color:#666a63;font-size:12px}.ctl strong{font:600 12px ui-monospace,monospace;color:#39463f}input[type=range]{width:100%;accent-color:var(--green)}.readout{border-left:1px solid #deddd5;padding-left:20px}.readout small{display:block;color:#898b82;font:9px ui-monospace,monospace;letter-spacing:.12em}.readout b{font:600 16px ui-monospace,monospace}.foot{display:flex;justify-content:space-between;gap:18px;padding:12px 28px 17px;color:#77796f;font-size:11px}.legend{display:flex;gap:16px;flex-wrap:wrap}.key{display:flex;align-items:center;gap:6px}.swatch{width:10px;height:8px;border:1px solid #494b46;background:#fff}.swatch.wood{background:#d7d1c5}.swatch.rail{height:3px;background:#8b918d;border:0}.hint{color:#85867f}button{border:1px solid #d9d8d0;border-radius:8px;background:#fff;padding:7px 11px;color:#59635c;cursor:pointer;font:11px inherit}button:hover{border-color:#9ca69e}@media(max-width:700px){.page{margin:8px auto;padding:0 7px}.head{padding:17px 17px 4px}.head h1{font-size:20px}.fig{font-size:8px}.drawing{padding:0}.controls{grid-template-columns:1fr;padding:13px 17px;gap:12px}.readout{border:0;border-top:1px solid #deddd5;padding:9px 0 0}.foot{display:block;padding:11px 17px}.hint{margin-top:7px}}
+</style></head>
+<body><main class="page"><section class="card">
+<header class="head"><div><div class="kicker">SLIDING DISPLAY TABLE · MECHANISM STUDY</div><h1>滑移推板桌</h1><div class="sub">双列白色活动板沿长向滑轨移动　／　木纹承台与端部限位</div></div><div class="fig">FIG. 01　·　XY SLIDE</div></header>
+<div class="drawing"><svg id="scene" viewBox="0 0 1000 630" role="img" aria-label="等轴测滑移推板桌，白色活动板沿桌面滑轨前后滑动"></svg></div>
+<div class="controls"><div class="ctl"><label for="travel"><span>推板行程　·　拖动滑块或使用方向键</span><strong id="position">0 mm</strong></label><input id="travel" type="range" min="-80" max="80" value="0" step="1" aria-label="推板滑动行程"></div><div class="readout"><small>ACTIVE TRAVEL</small><b id="state">中心位置</b></div></div>
+<footer class="foot"><div class="legend"><span class="key"><i class="swatch"></i>滑动白板</span><span class="key"><i class="swatch wood"></i>木质承台</span><span class="key"><i class="swatch rail"></i>导向滑轨</span></div><div class="hint"><button id="reset" type="button">复位</button>　白板可在轨道行程内连续滑动</div></footer>
+</section></main>
+<script>
+(()=>{
+const svg=document.querySelector('#scene'),slider=document.querySelector('#travel'),pos=document.querySelector('#position'),state=document.querySelector('#state');
+const NS='http://www.w3.org/2000/svg', W=250,L=560, ox=500,oy=82, sx=.69,sy=.39,sz=1;
+const P=(x,y,z=0)=>[ox+(x-y)*sx,oy+(x+y)*sy-z*sz];
+const el=(tag,attrs={},parent=svg)=>{const n=document.createElementNS(NS,tag);for(const [k,v]of Object.entries(attrs))n.setAttribute(k,v);parent.appendChild(n);return n};
+const poly=(pts,fill,stroke='#30332f',sw=1.4,parent=svg)=>el('polygon',{points:pts.map(p=>p.join(',')).join(' '),fill,stroke,'stroke-width':sw,'stroke-linejoin':'round'},parent);
+const line=(a,b,color='#666b65',sw=1,parent=svg)=>el('line',{x1:a[0],y1:a[1],x2:b[0],y2:b[1],stroke:color,'stroke-width':sw,'stroke-linecap':'round'},parent);
+const dot=(p,r=2.1,fill='#555a54')=>el('circle',{cx:p[0],cy:p[1],r,fill,stroke:'#f8f7f2','stroke-width':.7});
+function slab(x,y,w,d,z,h,top,side='#d0ccc2',stroke='#30332f'){
+ const a=P(x,y,z),b=P(x+w,y,z),c=P(x+w,y+d,z),d0=P(x,y+d,z),a1=P(x,y,z-h),c1=P(x+w,y+d,z-h);
+ poly([a,b,c,d0],top,stroke,1.35);poly([d0,c,c1,P(x,y+d,z-h)],side,stroke,1.1);poly([b,c,c1,P(x+w,y,z-h)],'#bdb9af',stroke,1.1);
+}
+// Floor shadow and underframe
+el('ellipse',{cx:493,cy:468,rx:285,ry:66,fill:'#44483f',opacity:.08});
+slab(-10,-10,W+20,L+20,66,15,'#d8d4ca','#b8b4aa');
+// Under-table apron rails, cross braces and supports
+for(const y of [35,L-34])slab(-6,y,W+12,10,51,38,'#b8b8b1','#9b9d96');
+for(const x of [5,W-11])slab(x,45,7,L-90,51,11,'#b4b5ae','#969991');
+for(const y of [90,280,470]){
+ const x=8; const A=P(x,y,51),B=P(x+9,y,51),A0=P(x,y,0),B0=P(x+9,y,0);
+ poly([A,B,B0,A0],'#c4c5be','#444842',1.5);line(A0,B0,'#777c74',1.3);
+ const x2=W-17,C=P(x2,y,51),D=P(x2+9,y,51),C0=P(x2,y,0),D0=P(x2+9,y,0);poly([C,D,D0,C0],'#c4c5be','#444842',1.5);
+ // foot plates and corner bolts
+ slab(x-4,y+12,19,19,1,2,'#aeb0a8','#858981');slab(x2-4,y+12,19,19,1,2,'#aeb0a8','#858981');
+}
+// Track channels and slim steel guide rails
+for(const x of [22,W-30]){
+ slab(x,0,8,L,67,3,'#a9aba5','#858983');slab(x+2,4,4,L-8,70,1.6,'#7f8984','#59645e');
+ for(let y=22;y<L;y+=38){line(P(x+1,y,70),P(x+7,y,70),'#e7e7df',.75);}
+}
+// warm deck grain lines terminate at the rim
+for(let i=0;i<10;i++){
+ const y=27+i*55;line(P(18,y,67.5),P(W-18,y,67.5),i%3===0?'#b9b4aa':'#cbc6bc',i%3===0?.8:.55);
+}
+// board blocks: independent carriers, two lanes. Track displacement maps slider to mm.
+const boards=[],rightLengths=[24,150,48,126],rightStarts=[0,56,288,434];
+ for(let row=0;row<5;row++){
+ boards.push({row,col:0,y:row*124,x:20,w:100,d:64});
+}
+for(let row=0;row<rightLengths.length;row++){
+ boards.push({row,col:1,y:rightStarts[row],x:130,w:100,d:rightLengths[row]});
+}
+const movers=[];
+for(const q of boards){const g=el('g',{'data-board':`${q.row}-${q.col}`});movers.push({g,q});}
+// end stops, side lips and small fasteners drawn above panel layer
+function fixedDetails(){
+ for(const x of [0,W-7])slab(x,0,7,L,76,6,'#c5c5be','#a4a69f');
+ for(const y of [0,L-8]){slab(-1,y,W+2,8,78,8,'#c8c9c2','#a5a7a0');}
+ for(const y of [12,L-20])for(const x of [10,W-18]){const p=P(x,y,79);dot(p,2.7,'#555a55');dot([p[0],p[1]-.2],.8,'#d9dbd4');}
+}
+function drawBoards(t){
+ for(const {g,q} of movers){g.replaceChildren();
+  // A pushed row moves as a linked set: the leading panel travels farther,
+  // closing its gaps; the opposite row moves the other way and opens its gaps.
+  const factor=Math.max(.14,.41-.08*q.row),drift=t*factor*(q.col?-1:1);
+  const y=Math.max(0,Math.min(L-q.d,q.y+drift));
+  const x=q.x,z=79,h=5, p1=P(x,y,z),p2=P(x+q.w,y,z),p3=P(x+q.w,y+q.d,z),p4=P(x,y+q.d,z);
+  poly([p4,p3,P(x+q.w,y+q.d,z-h),P(x,y+q.d,z-h)],'#e7e6e1','#30332f',1.25,g);
+  poly([p2,p3,P(x+q.w,y+q.d,z-h),P(x+q.w,y,z-h)],'#d6d5cf','#30332f',1.15,g);
+  poly([p1,p2,p3,p4],'#fff','#252824',1.55,g);
+  // shallow edge bevel and paired underside glide shoes
+  line(P(x+5,y+5,z),P(x+q.w-5,y+5,z),'#eeefeb',.8,g);
+  for(const xx of [x+13,x+q.w-13]){const p=P(xx,y+q.d*.52,z-h-1);el('rect',{x:p[0]-2.7,y:p[1]-1.5,width:5.4,height:3,rx:1,fill:'#777d77',stroke:'#424741','stroke-width':.65},g);}
+ }
+ const v=Number(slider.value);pos.textContent=`${v>0?'+':''}${v} mm`;state.textContent=Math.abs(v)<2?'中心位置':v>0?'左列压缩 · 右列释放':'左列释放 · 右列压缩';
+}
+drawBoards(0);fixedDetails();slider.addEventListener('input',()=>drawBoards(Number(slider.value)));document.querySelector('#reset').addEventListener('click',()=>{slider.value=0;drawBoards(0)});
+})();
+</script></body></html>
